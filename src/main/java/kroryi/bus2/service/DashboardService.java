@@ -1,8 +1,6 @@
 package kroryi.bus2.service;
 
-import kroryi.bus2.dto.RedisStat;
 import kroryi.bus2.repository.redis.ApiLogRepository;
-import kroryi.bus2.repository.redis.RedisStatRepository;
 import kroryi.bus2.repository.jpa.RouteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

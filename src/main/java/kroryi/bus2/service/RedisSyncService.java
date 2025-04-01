@@ -4,7 +4,6 @@ import jakarta.transaction.Transactional;
 import kroryi.bus2.dto.RedisStat;
 import kroryi.bus2.entity.RedisStatJpa;
 import kroryi.bus2.repository.jpa.JpaStatRepository;
-import kroryi.bus2.repository.redis.RedisStatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -44,18 +43,31 @@ public class RedisSyncService {
     }
     // 쓰기 (DB와 Redis에 동시에 저장)
     @Transactional
-    public void saveStat(RedisStatJpa stat) {
-        jpaStatRepository.save(stat);
+    public void saveStat(RedisStatJpa inputStat) {
 
+        RedisStatJpa stat = jpaStatRepository.findById(inputStat.getId())
+                .orElseGet(() -> {
+                    RedisStatJpa newStat = new RedisStatJpa();
+                    newStat.setId(inputStat.getId());
+                    return newStat;
+                });
+
+        // 필드 업데이트
+        stat.setTimestamp(inputStat.getTimestamp());
+        stat.setMemoryUsageMb(inputStat.getMemoryUsageMb());
+
+        // Redis 먼저 저장
         String key = "redis_stat:" + stat.getId();
-
         Map<String, Object> hash = new HashMap<>();
         hash.put("id", stat.getId());
         hash.put("timestamp", stat.getTimestamp().toString());
         hash.put("memoryUsageMb", stat.getMemoryUsageMb());
 
         redisTemplate.opsForHash().putAll(key, hash);
-        redisTemplate.expire(key, Duration.ofMinutes(10)); // TTL 설정
+        redisTemplate.expire(key, Duration.ofMinutes(10));
+
+        // 영속 상태 객체 저장 → Optimistic Lock 예외 방지
+//        jpaStatRepository.save(stat);
     }
 
     // 삭제 (DB와 Redis 동시에 삭제)

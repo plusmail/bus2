@@ -1,17 +1,10 @@
 package kroryi.bus2.service;
 
-import kroryi.bus2.dto.RedisStat;
-import kroryi.bus2.repository.redis.RedisStatRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-
-import java.time.LocalDateTime;
-import java.util.Properties;
 
 @Service
 @Log4j2

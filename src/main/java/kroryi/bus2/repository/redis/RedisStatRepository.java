@@ -1,5 +1,6 @@
 package kroryi.bus2.repository.redis;
 
+
 import kroryi.bus2.dto.RedisStat;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
