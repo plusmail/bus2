@@ -25,7 +25,7 @@ class SportRepositoryTest {
     @Test
     @DisplayName("redisBasicTest")
     void redisBasicTest() {
-        Sport soccer = Sport.builder().id(3L).name("Soccer").build();
+        Sport soccer = Sport.builder().id(4L).name("Soccer").build();
 //        sportRepository.save(soccer);
 //        log.info("Sport 저장");
 //
