@@ -1,8 +1,6 @@
 package kroryi.bus2.repository.redis;
 
-import kroryi.bus2.entity.RedisStat;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
+import kroryi.bus2.dto.RedisStat;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

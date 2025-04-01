@@ -15,6 +15,4 @@ public class RedisStatJpa {
     private LocalDateTime timestamp;
     private double memoryUsageMb;
 
-    @Version
-    private Long version =0L;  // 낙관적 잠금 필드
 }

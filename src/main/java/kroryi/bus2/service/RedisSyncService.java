@@ -1,7 +1,7 @@
 package kroryi.bus2.service;
 
 import jakarta.transaction.Transactional;
-import kroryi.bus2.entity.RedisStat;
+import kroryi.bus2.dto.RedisStat;
 import kroryi.bus2.entity.RedisStatJpa;
 import kroryi.bus2.repository.jpa.JpaStatRepository;
 import kroryi.bus2.repository.redis.RedisStatRepository;
@@ -9,42 +9,53 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class RedisSyncService {
 
-    private final RedisStatRepository redisStatRepository;
     private final RedisTemplate<String, Object> redisTemplate;
     private final JpaStatRepository jpaStatRepository;
 
     // 읽기 (캐시 조회 후 DB 조회)
     public RedisStatJpa getStat(Long id) {
-        String cacheKey = "redis_stat:" + id;
+        String key = "redis_stat:" + id;
+        Map<Object, Object> hash = redisTemplate.opsForHash().entries(key);
 
-        // 1. Redis에서 먼저 조회
-        RedisStat cachedStat = (RedisStat) redisTemplate.opsForValue().get(cacheKey);
-        if (cachedStat != null) {
-            return convertToJpaStat(cachedStat);
+        if (hash != null && !hash.isEmpty()) {
+            RedisStat dto = new RedisStat(
+                    Long.valueOf(hash.get("id").toString()),
+                    (LocalDateTime) hash.get("timestamp"),
+                    Double.valueOf(hash.get("memoryUsageMb").toString())
+            );
+            return convertToJpaStat(dto);
         }
 
-        // 없으면 DB에서 가져와 캐시에 저장
         return jpaStatRepository.findById(id)
                 .map(stat -> {
-                    redisTemplate.opsForValue().set(cacheKey, convertToRedisStat(stat));
+                    saveStat(stat);
                     return stat;
                 })
                 .orElse(null);
     }
-
     // 쓰기 (DB와 Redis에 동시에 저장)
     @Transactional
     public void saveStat(RedisStatJpa stat) {
-        // 1. DB 저장
-        RedisStatJpa savedStat = jpaStatRepository.save(stat);
+        jpaStatRepository.save(stat);
 
-        // 2. 캐시에 저장 (DB에 저장된 후에 해야 일관성 확보 가능)
-        String cacheKey = "redis_stat:" + savedStat.getId();
-        redisTemplate.opsForValue().set(cacheKey, convertToRedisStat(savedStat));
+        String key = "redis_stat:" + stat.getId();
+
+        Map<String, Object> hash = new HashMap<>();
+        hash.put("id", stat.getId());
+        hash.put("timestamp", stat.getTimestamp().toString());
+        hash.put("memoryUsageMb", stat.getMemoryUsageMb());
+
+        redisTemplate.opsForHash().putAll(key, hash);
+        redisTemplate.expire(key, Duration.ofMinutes(10)); // TTL 설정
     }
 
     // 삭제 (DB와 Redis 동시에 삭제)
@@ -56,18 +67,26 @@ public class RedisSyncService {
         redisTemplate.delete("redis_stat:" + id);
     }
 
-    // RedisStat ↔ RedisStatJpa 변환 메서드
+    private RedisStatJpa convertFromHash(Map<Object, Object> hash) {
+        RedisStatJpa stat = new RedisStatJpa();
+        stat.setId(Long.valueOf(hash.get("id").toString()));
+        stat.setTimestamp(LocalDateTime.parse(hash.get("timestamp").toString()));
+        stat.setMemoryUsageMb(Double.valueOf(hash.get("memoryUsageMb").toString()));
+        return stat;
+    }
+
     private RedisStat convertToRedisStat(RedisStatJpa jpaStat) {
-        RedisStat redisStat = new RedisStat();
-        redisStat.setId(jpaStat.getId());
-        redisStat.setTimestamp(jpaStat.getTimestamp());
-        redisStat.setMemoryUsageMb(jpaStat.getMemoryUsageMb());
-        return redisStat;
+        return new RedisStat(
+                jpaStat.getId(),
+                jpaStat.getTimestamp(), // LocalDateTime → 문자열
+                jpaStat.getMemoryUsageMb()
+        );
     }
 
     private RedisStatJpa convertToJpaStat(RedisStat redisStat) {
         RedisStatJpa jpaStat = new RedisStatJpa();
         jpaStat.setId(redisStat.getId());
+
         jpaStat.setTimestamp(redisStat.getTimestamp());
         jpaStat.setMemoryUsageMb(redisStat.getMemoryUsageMb());
         return jpaStat;

@@ -1,6 +1,6 @@
 package kroryi.bus2.service;
 
-import kroryi.bus2.entity.RedisStat;
+import kroryi.bus2.dto.RedisStat;
 import kroryi.bus2.repository.redis.ApiLogRepository;
 import kroryi.bus2.repository.redis.RedisStatRepository;
 import kroryi.bus2.repository.jpa.RouteRepository;
@@ -24,7 +24,7 @@ public class DashboardService {
 
     private final RouteRepository routeRepository;
     private final ApiLogRepository apiLogRepository;
-    private final RedisStatRepository redisStatRepository;
+//    private final RedisStatRepository redisStatRepository;
 
     private final RedisTemplate<String, Object> redisTemplate;
 
@@ -37,13 +37,13 @@ public class DashboardService {
                 LocalDate.now().atStartOfDay(),
                 LocalDate.now().plusDays(1).atStartOfDay()
         );
-        double redisUsage = redisStatRepository.findTopByOrderByTimestampDesc()
-                .map(RedisStat::getMemoryUsageMb)
-                .orElse(0.0);
-
-        result.put("routesCount", routeCount);
-        result.put("requestToday", requestCountToday);
-        result.put("redisUsage", redisUsage + " MB");
+//        double redisUsage = redisStatRepository.findTopByOrderByTimestampDesc()
+//                .map(RedisStat::getMemoryUsageMb)
+//                .orElse(0.0);
+//
+//        result.put("routesCount", routeCount);
+//        result.put("requestToday", requestCountToday);
+//        result.put("redisUsage", redisUsage + " MB");
 
 
         return result;
@@ -54,27 +54,27 @@ public class DashboardService {
         LocalDateTime start = LocalDate.now().atStartOfDay();
         LocalDateTime end = LocalDate.now().plusDays(1).atStartOfDay();
 
-        log.info("start-0----> {}", start);
-        log.info("start-0----> {}", end);
-        // RedisStat 엔티티 리스트를 가져옵니다 (Redis에서 직접 조회)
-        List<RedisStat> stats = (List<RedisStat>) redisStatRepository.findAll(); // 모든 데이터를 가져온 후 필터링
-
-        log.info("stats-----> {}", stats);
+//        log.info("start-0----> {}", start);
+//        log.info("start-0----> {}", end);
+//        // RedisStat 엔티티 리스트를 가져옵니다 (Redis에서 직접 조회)
+//        List<RedisStat> stats = (List<RedisStat>) redisStatRepository.findAll(); // 모든 데이터를 가져온 후 필터링
+//
+//        log.info("stats-----> {}", stats);
         List<Map<String, Object>> result = new ArrayList<>();
 
-        long count = stats.stream()
-                .filter(stat -> !stat.getTimestamp().isBefore(start) && stat.getTimestamp().isBefore(end))
-                .count();
-
-        log.info("count-----> {}", count);
-        stats.stream()
-                .filter(stat -> !stat.getTimestamp().isBefore(start) && stat.getTimestamp().isBefore(end)) // 조건에 맞는 데이터 필터링
-                .forEach(stat -> {
-                    Map<String, Object> entry = new HashMap<>();
-                    entry.put("time", stat.getTimestamp().toLocalTime().withMinute(0).withSecond(0).toString()); // "HH:00"
-                    entry.put("memoryUsageMb", stat.getMemoryUsageMb());
-                    result.add(entry);
-                });
+//        long count = stats.stream()
+//                .filter(stat -> !stat.getTimestamp().isBefore(start) && stat.getTimestamp().isBefore(end))
+//                .count();
+//
+//        log.info("count-----> {}", count);
+//        stats.stream()
+//                .filter(stat -> !stat.getTimestamp().isBefore(start) && stat.getTimestamp().isBefore(end)) // 조건에 맞는 데이터 필터링
+//                .forEach(stat -> {
+//                    Map<String, Object> entry = new HashMap<>();
+//                    entry.put("time", stat.getTimestamp().toLocalTime().withMinute(0).withSecond(0).toString()); // "HH:00"
+//                    entry.put("memoryUsageMb", stat.getMemoryUsageMb());
+//                    result.add(entry);
+//                });
         return result;
 
     }
@@ -91,15 +91,15 @@ public class DashboardService {
     private class RedisStatService {
 
         public void saveRedisUsage(double usage) {
-            RedisStat redisStat = new RedisStat();
-            redisStat.setTimestamp(LocalDateTime.now());
-            redisStat.setMemoryUsageMb(usage);
-
-            // 데이터 저장
-            redisStatRepository.save(redisStat);
-
-            // 로그 출력
-            System.out.println("Redis 사용량 저장: " + usage + "MB");
+//            RedisStat redisStat = new RedisStat();
+//            redisStat.setTimestamp(LocalDateTime.now());
+//            redisStat.setMemoryUsageMb(usage);
+//
+//            // 데이터 저장
+//            redisStatRepository.save(redisStat);
+//
+//            // 로그 출력
+//            System.out.println("Redis 사용량 저장: " + usage + "MB");
 
 
         }
