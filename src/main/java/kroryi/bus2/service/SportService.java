@@ -41,4 +41,5 @@ public class SportService {
         redisTemplate.opsForHash().put(key, "id", sport.getId());
         redisTemplate.opsForHash().put(key, "name", sport.getName());
     }
+
 }
