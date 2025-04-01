@@ -5,13 +5,15 @@ import jakarta.persistence.Id;
 import lombok.*;
 import org.springframework.data.redis.core.RedisHash;
 
-@Entity
+import java.io.Serializable;
+
 @Builder
+@RedisHash(value = "sport", timeToLive = 300)
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-public class Sport {
+public class SportRedis  implements Serializable {
 
     @Id
     public Long id;

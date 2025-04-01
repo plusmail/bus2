@@ -1,6 +1,7 @@
 package kroryi.bus2.repository;
 
 import kroryi.bus2.entity.Sport;
+import kroryi.bus2.entity.SportRedis;
 import kroryi.bus2.repository.jpa.SportRepository;
 import kroryi.bus2.service.SportService;
 import lombok.extern.log4j.Log4j2;
@@ -41,8 +42,8 @@ class SportRepositoryTest {
     @Test
     void redisTestGet() {
 
-        Sport sport = sportService.getSport(1L);
-        log.info(sport);
+        SportRedis sport = sportService.getSport(1L);
+        log.info(sport.getName());
     }
 
 }
