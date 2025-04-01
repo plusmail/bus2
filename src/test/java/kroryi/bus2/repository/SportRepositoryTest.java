@@ -27,14 +27,6 @@ class SportRepositoryTest {
     @DisplayName("redisBasicTest")
     void redisBasicTest() {
         Sport soccer = Sport.builder().id(4L).name("Soccer").build();
-//        sportRepository.save(soccer);
-//        log.info("Sport 저장");
-//
-//        Sport found = sportRepository.findById(2L).get();
-//        log.info("Soccer 찾기");
-//
-//        assertEquals(found.getId(), 2L);
-//        assertEquals(found.getName(), "Soccer");
         sportService.saveSport(soccer);
 
     }
